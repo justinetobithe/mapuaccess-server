@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Employee;
+use App\Models\Student;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -26,18 +28,25 @@ class AuthController extends Controller
             ]);
         }
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = md5(uniqid() . date('u')) . '.' . pathinfo($image->getClientOriginalName(), PATHINFO_EXTENSION);
-            $upload = $image->storeAs("/public/image", $imageName);
-            if ($upload) {
-                $validated['image'] = $imageName;
-            }
-        }
-
         $validated['password'] = Hash::make($validated['password']);
 
         $user = User::create($validated);
+
+
+        if ($user->role === 'student') {
+            Student::create([
+                'user_id' => $user->id,
+                'student_no' =>  $validated['student_no'],
+            ]);
+        }
+
+        if ($user->role === 'employee') {
+            Employee::create([
+                'user_id' => $user->id,
+                'employee_no' => $validated['employee_no'],
+            ]);
+        }
+
 
         return response()->json([
             'status' => true,
@@ -49,7 +58,7 @@ class AuthController extends Controller
     public function login(AuthLoginRequest $request)
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = auth()->user();
+            $user = User::with(['student', 'employee'])->find(auth()->id());
             $token = $user->generateToken();
 
             $data = [
@@ -74,15 +83,9 @@ class AuthController extends Controller
     public function mobileLogin(AuthLoginRequest $request)
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = auth()->user();
-            if ($user->status == 0) {
-                return response()->json([
-                    'status' => false,
-                    'message' => __('messages.errors.needs_approval'),
-                ]);
-            }
+            $user = User::with(['student', 'employee'])->find(auth()->id());
 
-            if ($user->role !== 'student' && $user->role !== 'guard') {
+            if ($user->role !== 'student' && $user->role !== 'employee' && $user->role !== 'guard') {
                 return response()->json([
                     'status' => false,
                     'message' => __('messages.errors.role_access_denied'),

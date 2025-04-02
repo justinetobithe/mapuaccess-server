@@ -22,9 +22,11 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,
             'phone' => $this->phone,
-            'address' => $this->address, 
+            'address' => $this->address,
             'role' => $this->role,
-            'image' => $this->image, 
+            'image' => $this->image,
+            'student' => $this->whenLoaded('student'),
+            'employee' => $this->whenLoaded('employee'),
         ];
     }
 }

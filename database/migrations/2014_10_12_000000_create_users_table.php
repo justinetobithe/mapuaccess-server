@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->timestamp('two_factor_expires_at')->nullable();
-            $table->enum('role', ['student', 'guest', 'guard', 'admin'])->default('student');
+            $table->enum('role', ['student', 'employee', 'guard', 'admin'])->default('student');
             $table->string('image')->nullable();
             $table->rememberToken();
             $table->timestamps();

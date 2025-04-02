@@ -43,4 +43,19 @@ class User extends Authenticatable
     {
         return $this->createToken("auth-{$this->id}")->plainTextToken;
     }
+
+    public function vehicles()
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
 }
